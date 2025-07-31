@@ -21,6 +21,9 @@ async function bootstrap() {
       'http://localhost:3000', // Alternative React port
       'http://localhost:3001', // React dev server default
       'http://localhost:5173', // Vite default
+      'https://images-storage-reactjs.vercel.app', // Vercel production
+      'https://images-storage-reactjs-9k9c0c1ej-kh4n9s-projects.vercel.app', // Vercel preview
+      /https:\/\/.*\.vercel\.app$/, // All Vercel preview deployments
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
