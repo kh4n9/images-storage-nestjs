@@ -12,6 +12,6 @@ import { FileUrlRefreshService } from './file-url-refresh.service';
   ],
   controllers: [FilesController],
   providers: [FilesService, DiscordStorageService, FileUrlRefreshService],
-  exports: [FilesService, DiscordStorageService],
+  exports: [FilesService, DiscordStorageService, FileUrlRefreshService],
 })
 export class FilesModule {}
