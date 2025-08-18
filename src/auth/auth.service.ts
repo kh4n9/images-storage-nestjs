@@ -3,12 +3,14 @@ import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'src/users/users.service';
 import * as bcrypt from 'bcrypt';
 import { Role } from 'src/common/enums/role.enum';
+import { FileUrlRefreshService } from 'src/files/file-url-refresh.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
+    private fileUrlRefreshService: FileUrlRefreshService,
   ) {}
 
   async signIn(email: string, password: string) {
@@ -21,6 +23,17 @@ export class AuthService {
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
+    }
+
+    try {
+      await this.fileUrlRefreshService.refreshUrlsForUser(
+        user._id.toString(),
+      );
+    } catch (error) {
+      console.error(
+        `Failed to refresh file URLs for user ${user._id}:`,
+        error,
+      );
     }
 
     const payload = {

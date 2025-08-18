@@ -10,7 +10,6 @@ import { FoldersModule } from './folders/folders.module';
 import { FilesModule } from './files/files.module';
 import { CatModule } from './cat/cat.module';
 import { ConfigModule } from '@nestjs/config';
-import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -21,7 +20,6 @@ import { ScheduleModule } from '@nestjs/schedule';
     MongooseModule.forRoot(
       process.env.MONGODB_URI || 'mongodb://localhost:27017/images-storage',
     ),
-    ScheduleModule.forRoot(),
     AuthModule,
     UsersModule,
     FoldersModule,
