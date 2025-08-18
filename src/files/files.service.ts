@@ -54,7 +54,9 @@ export class FilesService {
         size: file.size,
         type: fileExtension.toLowerCase(),
         mimeType: file.mimetype,
-        discordMessageId: discordResult.messageId,
+        guildId: discordResult.guildId,
+        channelId: discordResult.channelId,
+        messageId: discordResult.messageId,
         storageProvider: 'discord',
         isDeleted: false,
       };
@@ -136,19 +138,20 @@ export class FilesService {
     try {
       // Try to delete from Discord first
       let discordDeleteSuccess = true;
-      if (file.discordMessageId) {
+      if (file.messageId && file.channelId) {
         try {
           discordDeleteSuccess = await this.discordStorageService.deleteFile(
-            file.discordMessageId,
+            file.channelId,
+            file.messageId,
           );
           if (!discordDeleteSuccess) {
             console.warn(
-              `Failed to delete Discord message ${file.discordMessageId}, but continuing with database deletion`,
+              `Failed to delete Discord message ${file.messageId}, but continuing with database deletion`,
             );
           }
         } catch (error) {
           console.error(
-            `Discord deletion failed for message ${file.discordMessageId}:`,
+            `Discord deletion failed for message ${file.messageId}:`,
             error,
           );
           // Continue with database deletion even if Discord fails
@@ -217,7 +220,8 @@ export class FilesService {
     const files = await this.filesModel
       .find({
         isDeleted: false,
-        discordMessageId: { $exists: true, $ne: null },
+        messageId: { $exists: true, $ne: null },
+        channelId: { $exists: true, $ne: null },
       })
       .exec();
 
@@ -226,7 +230,8 @@ export class FilesService {
     for (const file of files) {
       try {
         const newUrl = await this.discordStorageService.refreshAttachmentUrl(
-          file.discordMessageId,
+          file.channelId,
+          file.messageId,
         );
         if (newUrl && newUrl !== file.url) {
           await this.filesModel.updateOne({ _id: file._id }, { url: newUrl });
@@ -249,7 +254,8 @@ export class FilesService {
     const files = await this.filesModel
       .find({
         isDeleted: false,
-        discordMessageId: { $exists: true, $ne: null },
+        messageId: { $exists: true, $ne: null },
+        channelId: { $exists: true, $ne: null },
       })
       .exec();
 
@@ -262,7 +268,8 @@ export class FilesService {
 
       try {
         const exists = await this.discordStorageService.messageExists(
-          file.discordMessageId,
+          file.channelId,
+          file.messageId,
         );
 
         if (!exists) {
