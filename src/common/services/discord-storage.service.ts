@@ -11,6 +11,8 @@ import axios from 'axios';
 export interface DiscordUploadResult {
   url: string;
   messageId: string;
+  channelId: string;
+  guildId: string;
   filename: string;
   size: number;
 }
@@ -89,6 +91,8 @@ export class DiscordStorageService {
       return {
         url: fileUrl,
         messageId: message.id,
+        channelId: channel.id,
+        guildId: channel.guildId,
         filename: filename,
         size: buffer.length,
       };
@@ -98,19 +102,20 @@ export class DiscordStorageService {
     }
   }
 
-  async deleteFile(messageId: string): Promise<boolean> {
+  async deleteFile(channelId: string, messageId: string): Promise<boolean> {
     if (!this.isReady || !this.client) {
       throw new Error('Discord bot is not ready');
     }
 
-    const channelId = this.configService.get<string>('DISCORD_CHANNEL_ID');
-    if (!channelId) {
+    const resolvedChannelId =
+      channelId || this.configService.get<string>('DISCORD_CHANNEL_ID');
+    if (!resolvedChannelId) {
       throw new Error('Discord channel ID not configured');
     }
 
     try {
       const channel = (await this.client.channels.fetch(
-        channelId,
+        resolvedChannelId,
       )) as TextChannel;
       if (!channel || !channel.isTextBased()) {
         throw new Error('Invalid Discord channel');
@@ -153,19 +158,23 @@ export class DiscordStorageService {
     }
   }
 
-  async refreshAttachmentUrl(messageId: string): Promise<string> {
+  async refreshAttachmentUrl(
+    channelId: string,
+    messageId: string,
+  ): Promise<string> {
     if (!this.isReady || !this.client) {
       throw new Error('Discord bot is not ready');
     }
 
-    const channelId = this.configService.get<string>('DISCORD_CHANNEL_ID');
-    if (!channelId) {
+    const resolvedChannelId =
+      channelId || this.configService.get<string>('DISCORD_CHANNEL_ID');
+    if (!resolvedChannelId) {
       throw new Error('Discord channel ID not configured');
     }
 
     try {
       const channel = (await this.client.channels.fetch(
-        channelId,
+        resolvedChannelId,
       )) as TextChannel;
       if (!channel || !channel.isTextBased()) {
         throw new Error('Invalid Discord channel');
@@ -185,19 +194,20 @@ export class DiscordStorageService {
   }
 
   // Utility method to check if a Discord message exists
-  async messageExists(messageId: string): Promise<boolean> {
+  async messageExists(channelId: string, messageId: string): Promise<boolean> {
     if (!this.isReady || !this.client) {
       return false;
     }
 
-    const channelId = this.configService.get<string>('DISCORD_CHANNEL_ID');
-    if (!channelId) {
+    const resolvedChannelId =
+      channelId || this.configService.get<string>('DISCORD_CHANNEL_ID');
+    if (!resolvedChannelId) {
       return false;
     }
 
     try {
       const channel = (await this.client.channels.fetch(
-        channelId,
+        resolvedChannelId,
       )) as TextChannel;
       if (!channel || !channel.isTextBased()) {
         return false;

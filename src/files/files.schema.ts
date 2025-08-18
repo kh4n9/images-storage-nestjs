@@ -40,7 +40,13 @@ export class Files {
 
   // Discord-specific fields
   @Prop({ required: true })
-  discordMessageId: string;
+  guildId: string;
+
+  @Prop({ required: true })
+  channelId: string;
+
+  @Prop({ required: true })
+  messageId: string;
 
   @Prop({ default: 'discord' })
   storageProvider: string;
