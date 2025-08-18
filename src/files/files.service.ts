@@ -213,6 +213,33 @@ export class FilesService {
     }
   }
 
+  async refreshDiscordUrls(): Promise<number> {
+    const files = await this.filesModel
+      .find({
+        isDeleted: false,
+        discordMessageId: { $exists: true, $ne: null },
+      })
+      .exec();
+
+    let updated = 0;
+
+    for (const file of files) {
+      try {
+        const newUrl = await this.discordStorageService.refreshAttachmentUrl(
+          file.discordMessageId,
+        );
+        if (newUrl && newUrl !== file.url) {
+          await this.filesModel.updateOne({ _id: file._id }, { url: newUrl });
+          updated++;
+        }
+      } catch (error) {
+        console.error(`Failed to refresh URL for file ${file._id}:`, error);
+      }
+    }
+
+    return updated;
+  }
+
   // Admin utility to cleanup files with missing Discord messages
   async cleanupOrphanedFiles(): Promise<{
     checked: number;

@@ -153,6 +153,37 @@ export class DiscordStorageService {
     }
   }
 
+  async refreshAttachmentUrl(messageId: string): Promise<string> {
+    if (!this.isReady || !this.client) {
+      throw new Error('Discord bot is not ready');
+    }
+
+    const channelId = this.configService.get<string>('DISCORD_CHANNEL_ID');
+    if (!channelId) {
+      throw new Error('Discord channel ID not configured');
+    }
+
+    try {
+      const channel = (await this.client.channels.fetch(
+        channelId,
+      )) as TextChannel;
+      if (!channel || !channel.isTextBased()) {
+        throw new Error('Invalid Discord channel');
+      }
+
+      const message = await channel.messages.fetch(messageId);
+      const attachment = message.attachments.first();
+      if (!attachment) {
+        throw new Error('No attachment found for Discord message');
+      }
+
+      return attachment.url;
+    } catch (error) {
+      this.logger.error('Failed to refresh Discord file URL:', error);
+      throw new Error(`Failed to refresh file URL: ${error.message}`);
+    }
+  }
+
   // Utility method to check if a Discord message exists
   async messageExists(messageId: string): Promise<boolean> {
     if (!this.isReady || !this.client) {
