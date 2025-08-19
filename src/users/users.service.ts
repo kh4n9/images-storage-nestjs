@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from './users.schema';
-import { Model } from 'mongoose';
+import { Model, isValidObjectId } from 'mongoose';
 
 @Injectable()
 export class UsersService {
@@ -21,6 +21,10 @@ export class UsersService {
   }
 
   async update(id: string, user: Partial<User>) {
+    if (!isValidObjectId(id)) {
+      throw new BadRequestException('Invalid user ID');
+    }
+
     return this.userModel.findByIdAndUpdate(id, user, {
       new: true,
       runValidators: true,
@@ -28,6 +32,10 @@ export class UsersService {
   }
 
   async remove(id: string) {
+    if (!isValidObjectId(id)) {
+      throw new BadRequestException('Invalid user ID');
+    }
+
     return this.userModel.findByIdAndDelete(id);
   }
 }
