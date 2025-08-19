@@ -21,7 +21,10 @@ export class UsersService {
   }
 
   async update(id: string, user: Partial<User>) {
-    return this.userModel.findByIdAndUpdate(id, user, { new: true });
+    return this.userModel.findByIdAndUpdate(id, user, {
+      new: true,
+      runValidators: true,
+    });
   }
 
   async remove(id: string) {

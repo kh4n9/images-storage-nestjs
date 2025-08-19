@@ -36,8 +36,15 @@ export class UsersController {
 
   @Patch(':id')
   @Roles(Role.Admin)
-  update(@Param('id') id: string, @Body() user: Partial<User>) {
-    return this.usersService.update(id, user);
+  update(@Param('id') id: string, @Body() body: unknown) {
+    const { role, ...rest } = body as { role?: Role } & Partial<User>;
+    const updateData: Partial<User> = { ...rest };
+
+    if (role) {
+      updateData.roles = [role];
+    }
+
+    return this.usersService.update(id, updateData);
   }
 
   @Delete(':id')
