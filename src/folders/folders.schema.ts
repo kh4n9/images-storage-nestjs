@@ -19,7 +19,7 @@ export class Folders {
   files: Types.ObjectId[];
 
   @Prop({ type: Types.ObjectId, ref: 'Folders', default: null })
-  parent: Types.ObjectId | null;  
+  parent: Types.ObjectId | null;
 }
 
 export const FoldersSchema = SchemaFactory.createForClass(Folders);

@@ -26,12 +26,10 @@ export class AuthService {
     }
 
     try {
-      await this.fileUrlRefreshService.refreshUrlsForUser(
-        user._id.toString(),
-      );
+      await this.fileUrlRefreshService.refreshUrlsForUser(user._id.toString());
     } catch (error) {
       console.error(
-        `Failed to refresh file URLs for user ${user._id}:`,
+        `Failed to refresh file URLs for user ${user._id.toString()}:`,
         error,
       );
     }
@@ -42,7 +40,7 @@ export class AuthService {
       email: user.email,
       roles: user.roles,
     };
-    
+
     return {
       user: {
         id: user._id,
@@ -67,14 +65,14 @@ export class AuthService {
       password: hashedPassword,
       roles: [Role.User],
     });
-    
+
     const payload = {
       sub: newUser._id,
       name: newUser.name,
       email: newUser.email,
       roles: newUser.roles,
     };
-    
+
     return {
       user: {
         id: newUser._id,

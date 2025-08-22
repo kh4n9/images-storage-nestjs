@@ -1,17 +1,24 @@
 import {
+  Body,
   Controller,
   Delete,
   Get,
   Patch,
   Post,
-  Body,
   Param,
   UseGuards,
   Req,
+  BadRequestException,
 } from '@nestjs/common';
+import { Request } from 'express';
+import { Types } from 'mongoose';
 import { FoldersService } from './folders.service';
 import { CreateFolderDto } from './dto/create-folder.dto';
 import { AuthGuard } from '../common/guards/auth.guard';
+
+interface AuthRequest extends Request {
+  user?: { sub: string };
+}
 
 @Controller('folders')
 @UseGuards(AuthGuard)
@@ -19,11 +26,15 @@ export class FoldersController {
   constructor(private readonly foldersService: FoldersService) {}
 
   @Post()
-  createFolder(@Body() createDto: CreateFolderDto, @Req() req: any) {
+  createFolder(@Body() createDto: CreateFolderDto, @Req() req: AuthRequest) {
     // Đảm bảo userId từ token được sử dụng
+    const userId = (req.user as { sub: string } | undefined)?.sub;
+    if (!userId) {
+      throw new BadRequestException('User not authenticated');
+    }
     const folderData = {
       ...createDto,
-      userId: req.user.sub, // Lấy userId từ JWT token
+      userId: new Types.ObjectId(userId), // Lấy userId từ JWT token
     };
     return this.foldersService.createFolder(folderData);
   }

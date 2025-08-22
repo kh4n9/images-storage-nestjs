@@ -13,10 +13,14 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Response } from 'express';
+import { Request as ExpressRequest, Response } from 'express';
 import { FilesService } from './files.service';
 import { Files } from './files.schema';
 import { UploadFileDto } from './dto/upload-file.dto';
+
+interface AuthRequest extends ExpressRequest {
+  user?: { sub: string };
+}
 
 @Controller('files')
 export class FilesController {
@@ -27,7 +31,7 @@ export class FilesController {
   async uploadFile(
     @UploadedFile() file: Express.Multer.File,
     @Body() uploadDto: UploadFileDto,
-    @Request() req: any,
+    @Request() req: AuthRequest,
   ) {
     if (!file) {
       throw new BadRequestException('No file provided');
@@ -79,7 +83,7 @@ export class FilesController {
   }
 
   @Delete(':id')
-  async deleteFile(@Param('id') id: string, @Request() req: any) {
+  async deleteFile(@Param('id') id: string, @Request() req: AuthRequest) {
     const userId = req.user?.sub;
     if (!userId) {
       throw new BadRequestException('User not authenticated');
@@ -91,7 +95,7 @@ export class FilesController {
 
   // Admin endpoint to cleanup orphaned files
   @Post('admin/cleanup-orphaned')
-  async cleanupOrphanedFiles(@Request() req: any) {
+  async cleanupOrphanedFiles(@Request() req: AuthRequest) {
     // Add admin role check if needed
     const userId = req.user?.sub;
     if (!userId) {

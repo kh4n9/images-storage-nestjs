@@ -71,8 +71,9 @@ export class FilesService {
       }
 
       return savedFile;
-    } catch (error) {
-      throw new BadRequestException(`File upload failed: ${error.message}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      throw new BadRequestException(`File upload failed: ${message}`);
     }
   }
 
@@ -149,7 +150,7 @@ export class FilesService {
               `Failed to delete Discord message ${file.messageId}, but continuing with database deletion`,
             );
           }
-        } catch (error) {
+        } catch (error: unknown) {
           console.error(
             `Discord deletion failed for message ${file.messageId}:`,
             error,
@@ -168,8 +169,9 @@ export class FilesService {
       });
 
       return true;
-    } catch (error) {
-      throw new BadRequestException(`File deletion failed: ${error.message}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      throw new BadRequestException(`File deletion failed: ${message}`);
     }
   }
 
@@ -190,8 +192,9 @@ export class FilesService {
         filename: file.originalName,
         mimeType: file.mimeType,
       };
-    } catch (error) {
-      throw new BadRequestException(`File download failed: ${error.message}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      throw new BadRequestException(`File download failed: ${message}`);
     }
   }
 
@@ -237,8 +240,11 @@ export class FilesService {
           await this.filesModel.updateOne({ _id: file._id }, { url: newUrl });
           updated++;
         }
-      } catch (error) {
-        console.error(`Failed to refresh URL for file ${file._id}:`, error);
+      } catch (error: unknown) {
+        console.error(
+          `Failed to refresh URL for file ${file._id.toString()}:`,
+          error,
+        );
       }
     }
 
@@ -267,8 +273,11 @@ export class FilesService {
           await this.filesModel.updateOne({ _id: file._id }, { url: newUrl });
           updated++;
         }
-      } catch (error) {
-        console.error(`Failed to refresh URL for file ${file._id}:`, error);
+      } catch (error: unknown) {
+        console.error(
+          `Failed to refresh URL for file ${file._id.toString()}:`,
+          error,
+        );
       }
     }
 
@@ -311,10 +320,12 @@ export class FilesService {
             deletionReason: 'Discord message not found during cleanup',
           });
           cleaned++;
-          console.log(`Cleaned orphaned file: ${file.name} (${file._id})`);
+          console.log(
+            `Cleaned orphaned file: ${file.name} (${file._id.toString()})`,
+          );
         }
-      } catch (error) {
-        console.error(`Error checking file ${file._id}:`, error);
+      } catch (error: unknown) {
+        console.error(`Error checking file ${file._id.toString()}:`, error);
       }
     }
 

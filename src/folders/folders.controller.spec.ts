@@ -6,7 +6,7 @@ import { AuthGuard } from '../common/guards/auth.guard';
 class MockAuthGuard {
   canActivate() {
     return true;
-    }
+  }
 }
 
 describe('FoldersController', () => {
