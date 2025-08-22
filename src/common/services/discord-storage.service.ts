@@ -24,7 +24,7 @@ export class DiscordStorageService {
   private isReady = false;
 
   constructor(private configService: ConfigService) {
-    this.initializeBot();
+    void this.initializeBot();
   }
 
   private async initializeBot() {
@@ -48,7 +48,7 @@ export class DiscordStorageService {
 
     try {
       await this.client.login(token);
-    } catch (error) {
+    } catch (error: unknown) {
       this.logger.error('Failed to login to Discord:', error);
     }
   }
@@ -96,9 +96,10 @@ export class DiscordStorageService {
         filename: filename,
         size: buffer.length,
       };
-    } catch (error) {
+    } catch (error: unknown) {
       this.logger.error('Failed to upload file to Discord:', error);
-      throw new Error(`Discord upload failed: ${error.message}`);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      throw new Error(`Discord upload failed: ${message}`);
     }
   }
 
@@ -126,30 +127,32 @@ export class DiscordStorageService {
 
       this.logger.log(`Deleted Discord message ${messageId}`);
       return true;
-    } catch (error) {
-      // Handle specific Discord API errors
-      if (error.code === 10008) {
-        // Unknown Message - message already deleted or doesn't exist
-        this.logger.warn(
-          `Discord message ${messageId} not found (already deleted)`,
-        );
-        return true; // Consider it successful since the message is gone
-      }
+    } catch (error: unknown) {
+      if (typeof error === 'object' && error !== null && 'code' in error) {
+        const { code } = error as { code?: number };
+        if (code === 10008) {
+          // Unknown Message - message already deleted or doesn't exist
+          this.logger.warn(
+            `Discord message ${messageId} not found (already deleted)`,
+          );
+          return true; // Consider it successful since the message is gone
+        }
 
-      if (error.code === 50001) {
-        // Missing Access
-        this.logger.error(
-          `Missing access to delete Discord message ${messageId}`,
-        );
-        return false;
-      }
+        if (code === 50001) {
+          // Missing Access
+          this.logger.error(
+            `Missing access to delete Discord message ${messageId}`,
+          );
+          return false;
+        }
 
-      if (error.code === 50013) {
-        // Missing Permissions
-        this.logger.error(
-          `Missing permissions to delete Discord message ${messageId}`,
-        );
-        return false;
+        if (code === 50013) {
+          // Missing Permissions
+          this.logger.error(
+            `Missing permissions to delete Discord message ${messageId}`,
+          );
+          return false;
+        }
       }
 
       // Log other errors
@@ -187,9 +190,10 @@ export class DiscordStorageService {
       }
 
       return attachment.url;
-    } catch (error) {
+    } catch (error: unknown) {
       this.logger.error('Failed to refresh Discord file URL:', error);
-      throw new Error(`Failed to refresh file URL: ${error.message}`);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      throw new Error(`Failed to refresh file URL: ${message}`);
     }
   }
 
@@ -215,10 +219,13 @@ export class DiscordStorageService {
 
       await channel.messages.fetch(messageId);
       return true;
-    } catch (error) {
-      if (error.code === 10008) {
-        // Unknown Message
-        return false;
+    } catch (error: unknown) {
+      if (typeof error === 'object' && error !== null && 'code' in error) {
+        const { code } = error as { code?: number };
+        if (code === 10008) {
+          // Unknown Message
+          return false;
+        }
       }
       // Other errors might be temporary, assume exists
       return true;
@@ -233,9 +240,10 @@ export class DiscordStorageService {
       });
 
       return Buffer.from(response.data);
-    } catch (error) {
+    } catch (error: unknown) {
       this.logger.error('Failed to download file from Discord:', error);
-      throw new Error(`Failed to download file: ${error.message}`);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      throw new Error(`Failed to download file: ${message}`);
     }
   }
 

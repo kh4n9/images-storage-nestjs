@@ -7,12 +7,15 @@ import {
   Post,
   Request,
 } from '@nestjs/common';
+import { Request as ExpressRequest } from 'express';
 import { AuthService } from './auth.service';
 import { Public } from 'src/common/decorators/public.decorator';
-import { Role } from 'src/common/enums/role.enum';
-import { Roles } from 'src/common/decorators/roles.decorator';
 import { SignInDto } from './dto/sign-in.dto';
 import { RegisterDto } from './dto/register.dto';
+
+interface AuthRequest extends ExpressRequest {
+  user?: Record<string, unknown>;
+}
 
 @Controller('auth')
 export class AuthController {
@@ -38,7 +41,7 @@ export class AuthController {
 
   @HttpCode(HttpStatus.OK)
   @Get('profile')
-  getProfile(@Request() req) {
-    return req.user;
+  getProfile(@Request() req: AuthRequest) {
+    return req.user as Record<string, unknown>;
   }
 }
